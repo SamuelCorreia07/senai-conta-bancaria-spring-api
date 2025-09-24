@@ -7,6 +7,8 @@ import com.senai.senai_conta_bancaria_spring_api.domain.repository.ClienteReposi
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ClienteService {
@@ -19,8 +21,21 @@ public class ClienteService {
                 () -> repository.save(dto.toEntity())
         );
         var contas = clienteExistente.getContas();
-        contas.add(dto.contaDTO().toEntity());
+        var novaConta = dto.contaDTO().toEntity(clienteExistente);
 
-        return null;
+        boolean contaTipoExistente = contas.stream()
+                .anyMatch(conta -> conta.getClass().equals(novaConta.getClass()) && conta.isAtiva());
+
+        if (contaTipoExistente) throw new IllegalArgumentException("O cliente já possui uma conta ativa do tipo: " + novaConta.getClass().getSimpleName());
+
+        clienteExistente.getContas().add(novaConta);
+
+        return ClienteResponseDTO.fromEntity(repository.save(clienteExistente));
+    }
+
+    public List<ClienteResponseDTO> listarClientesAtivos() {
+        return repository.findAllByAtivoTrue().stream()
+                .map(ClienteResponseDTO::fromEntity)
+                .toList();
     }
 }

@@ -12,13 +12,18 @@ import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@DiscriminatorValue("CONTA_CORRENTE")
+@DiscriminatorValue("CORRENTEE")
 @Data
 @SuperBuilder
 @NoArgsConstructor
 public class ContaCorrente extends Conta{
-    @Column(nullable = false, precision = 20, scale = 2)
+    @Column(precision = 20, scale = 2)
     private BigDecimal limite;
-    @Column(nullable = false, precision = 10, scale = 4)
+    @Column(precision = 10, scale = 4)
     private BigDecimal taxa;
+
+    @Override
+    public String getTipo() {
+        return "CORRENTE";
+    }
 }
