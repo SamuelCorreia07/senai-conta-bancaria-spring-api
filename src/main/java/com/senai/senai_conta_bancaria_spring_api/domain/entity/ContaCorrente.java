@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@DiscriminatorValue("CORRENTEE")
+@DiscriminatorValue("CORRENTE")
 @Data
 @SuperBuilder
 @NoArgsConstructor

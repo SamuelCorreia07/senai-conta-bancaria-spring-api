@@ -38,4 +38,29 @@ public class ClienteService {
                 .map(ClienteResponseDTO::fromEntity)
                 .toList();
     }
+
+    public ClienteResponseDTO listarClienteAtivoPorCpf(String cpf) {
+        var cliente = getClienteAtivoPorCpf(cpf);
+        return ClienteResponseDTO.fromEntity(cliente);
+    }
+
+    public ClienteResponseDTO atualizarCliente(String cpf, ClienteRegistroDTO dto) {
+        var cliente = getClienteAtivoPorCpf(cpf);
+
+        cliente.setNome(dto.nome());
+        cliente.setCpf(dto.cpf());
+        return ClienteResponseDTO.fromEntity(repository.save(cliente));
+    }
+
+    private Cliente getClienteAtivoPorCpf(String cpf) {
+        return repository.findByCpfAndAtivoTrue(cpf)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente com CPF " + cpf + " não encontrado ou inativo."));
+    }
+
+    public void deletarCliente(String cpf) {
+        var cliente = getClienteAtivoPorCpf(cpf);
+        cliente.setAtivo(false);
+        cliente.getContas().forEach(conta -> conta.setAtiva(false));
+        repository.save(cliente);
+    }
 }

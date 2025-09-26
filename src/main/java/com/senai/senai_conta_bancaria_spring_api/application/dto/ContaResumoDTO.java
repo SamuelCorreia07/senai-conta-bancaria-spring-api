@@ -13,14 +13,14 @@ public record ContaResumoDTO(
         BigDecimal saldo
 ) {
     public Conta toEntity(Cliente cliente) {
-        if ("CONTA_CORRENTE".equalsIgnoreCase(tipo)) {
+        if ("CORRENTE".equalsIgnoreCase(tipo)) {
             return ContaCorrente.builder()
                     .numero(this.numero)
                     .saldo(this.saldo)
                     .ativa(true)
                     .cliente(cliente)
                     .build();
-        } else if ("CONTA_POUPANCA".equalsIgnoreCase(tipo)) {
+        } else if ("POUPANCA".equalsIgnoreCase(tipo)) {
             return ContaPoupanca.builder()
                     .numero(this.numero)
                     .saldo(this.saldo)
