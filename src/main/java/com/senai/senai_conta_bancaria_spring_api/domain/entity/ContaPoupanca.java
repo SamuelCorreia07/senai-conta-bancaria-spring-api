@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 public class ContaPoupanca extends Conta{
 
     @Column(precision = 5, scale = 4)
-    private BigDecimal rendimento;
+    private BigDecimal rendimento = new BigDecimal("0.03");
 
     @Override
     public String getTipo() {

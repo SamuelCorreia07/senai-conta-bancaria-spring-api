@@ -18,12 +18,24 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ContaCorrente extends Conta{
     @Column(precision = 20, scale = 2)
-    private BigDecimal limite;
+    private BigDecimal limite = new BigDecimal("500.00");
     @Column(precision = 10, scale = 4)
-    private BigDecimal taxa;
+    private BigDecimal taxa = new BigDecimal("0.05");
 
     @Override
     public String getTipo() {
         return "CORRENTE";
+    }
+
+    @Override
+    public void sacar(BigDecimal valor) {
+        validarValorMaiorQueZero(valor);
+        BigDecimal custoSaque = valor.multiply(taxa != null ? taxa : BigDecimal.ZERO);
+        BigDecimal totalSaque = valor.add(custoSaque);
+
+        if (this.getSaldo().add(limite != null ? limite : BigDecimal.ZERO).compareTo(totalSaque) < 0) {
+            throw new IllegalArgumentException("Saldo insuficiente para saque, considerando o limite.");
+        }
+        this.setSaldo(this.getSaldo().subtract(valor));
     }
 }

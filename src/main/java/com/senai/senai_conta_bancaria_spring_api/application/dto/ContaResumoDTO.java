@@ -8,21 +8,21 @@ import com.senai.senai_conta_bancaria_spring_api.domain.entity.ContaPoupanca;
 import java.math.BigDecimal;
 
 public record ContaResumoDTO(
-        String numero,
+        String numeroDaConta,
         String tipo,
         BigDecimal saldo
 ) {
     public Conta toEntity(Cliente cliente) {
         if ("CORRENTE".equalsIgnoreCase(tipo)) {
             return ContaCorrente.builder()
-                    .numero(this.numero)
+                    .numeroDaConta(this.numeroDaConta)
                     .saldo(this.saldo)
                     .ativa(true)
                     .cliente(cliente)
                     .build();
         } else if ("POUPANCA".equalsIgnoreCase(tipo)) {
             return ContaPoupanca.builder()
-                    .numero(this.numero)
+                    .numeroDaConta(this.numeroDaConta)
                     .saldo(this.saldo)
                     .ativa(true)
                     .cliente(cliente)
@@ -34,7 +34,7 @@ public record ContaResumoDTO(
 
     public static ContaResumoDTO fromEntity(Conta conta) {
         return new ContaResumoDTO(
-                conta.getNumero(),
+                conta.getNumeroDaConta(),
                 conta.getTipo(),
                 conta.getSaldo()
         );

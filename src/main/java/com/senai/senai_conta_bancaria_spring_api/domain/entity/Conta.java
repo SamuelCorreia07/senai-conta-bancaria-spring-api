@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @DiscriminatorColumn(name = "tipo_conta", discriminatorType = DiscriminatorType.STRING, length = 20)
 @Table(name = "conta",
 uniqueConstraints = {
-        @UniqueConstraint(name = "uk_conta_numero", columnNames = "numero"),
+        @UniqueConstraint(name = "uk_conta_numeroDaConta", columnNames = "numeroDaConta"),
         @UniqueConstraint(name = "uk_conta_cliente", columnNames = {"cliente_id", "tipo_conta"})
         }
 )
@@ -27,7 +27,7 @@ public abstract class Conta {
     private String id;
 
     @Column(nullable = false, length = 20)
-    private String numero;
+    private String numeroDaConta;
 
     @Column(nullable = false, precision = 20, scale = 2)
     private BigDecimal saldo;
@@ -40,4 +40,32 @@ public abstract class Conta {
     private Cliente cliente;
 
     public abstract String getTipo();
+
+    public void sacar(BigDecimal valor) {
+        validarValorMaiorQueZero(valor);
+        if (this.saldo.compareTo(valor) < 0) {
+            throw new IllegalArgumentException("Saldo insuficiente para saque.");
+        }
+        this.saldo = this.saldo.subtract(valor);
+    }
+
+    public void depositar(BigDecimal valor) {
+        validarValorMaiorQueZero(valor);
+        this.saldo = this.saldo.add(valor);
+    }
+
+    public void transferir(Conta contaDestino, BigDecimal valor) {
+        validarValorMaiorQueZero(valor);
+        if (this.id.equals(contaDestino.getId())) {
+            throw new IllegalArgumentException("Não é possível transferir para a mesma conta.");
+        }
+        this.sacar(valor);
+        contaDestino.depositar(valor);
+    }
+
+    protected static void validarValorMaiorQueZero(BigDecimal valor) {
+        if (valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor da operação deve ser maior que zero.");
+        }
+    }
 }

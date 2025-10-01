@@ -52,15 +52,15 @@ public class ClienteService {
         return ClienteResponseDTO.fromEntity(repository.save(cliente));
     }
 
-    private Cliente getClienteAtivoPorCpf(String cpf) {
-        return repository.findByCpfAndAtivoTrue(cpf)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente com CPF " + cpf + " não encontrado ou inativo."));
-    }
-
     public void deletarCliente(String cpf) {
         var cliente = getClienteAtivoPorCpf(cpf);
         cliente.setAtivo(false);
         cliente.getContas().forEach(conta -> conta.setAtiva(false));
         repository.save(cliente);
+    }
+
+    private Cliente getClienteAtivoPorCpf(String cpf) {
+        return repository.findByCpfAndAtivoTrue(cpf)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente com CPF " + cpf + " não encontrado ou inativo."));
     }
 }
