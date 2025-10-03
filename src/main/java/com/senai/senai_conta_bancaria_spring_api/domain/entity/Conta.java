@@ -1,6 +1,9 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
 
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.SaldoInsuficienteException;
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.TransferenciaParaMesmaContaException;
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.ValorNegativoException;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,30 +45,30 @@ public abstract class Conta {
     public abstract String getTipo();
 
     public void sacar(BigDecimal valor) {
-        validarValorMaiorQueZero(valor);
+        validarValorMaiorQueZero(valor, "Saque");
         if (this.saldo.compareTo(valor) < 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para saque.");
+            throw new SaldoInsuficienteException();
         }
         this.saldo = this.saldo.subtract(valor);
     }
 
     public void depositar(BigDecimal valor) {
-        validarValorMaiorQueZero(valor);
+        validarValorMaiorQueZero(valor, "Depósito");
         this.saldo = this.saldo.add(valor);
     }
 
     public void transferir(Conta contaDestino, BigDecimal valor) {
-        validarValorMaiorQueZero(valor);
+        validarValorMaiorQueZero(valor, "Transferência");
         if (this.id.equals(contaDestino.getId())) {
-            throw new IllegalArgumentException("Não é possível transferir para a mesma conta.");
+            throw new TransferenciaParaMesmaContaException();
         }
         this.sacar(valor);
         contaDestino.depositar(valor);
     }
 
-    protected static void validarValorMaiorQueZero(BigDecimal valor) {
+    protected static void validarValorMaiorQueZero(BigDecimal valor, String operacao) {
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor da operação deve ser maior que zero.");
+            throw new ValorNegativoException(operacao);
         }
     }
 }

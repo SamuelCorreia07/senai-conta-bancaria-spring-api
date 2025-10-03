@@ -1,5 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.SaldoInsuficienteException;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -18,9 +19,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ContaCorrente extends Conta{
     @Column(precision = 20, scale = 2)
-    private BigDecimal limite = new BigDecimal("500.00");
+    private BigDecimal limite;
     @Column(precision = 10, scale = 4)
-    private BigDecimal taxa = new BigDecimal("0.05");
+    private BigDecimal taxa;
 
     @Override
     public String getTipo() {
@@ -29,13 +30,13 @@ public class ContaCorrente extends Conta{
 
     @Override
     public void sacar(BigDecimal valor) {
-        validarValorMaiorQueZero(valor);
+        validarValorMaiorQueZero(valor, "Saque");
         BigDecimal custoSaque = valor.multiply(taxa != null ? taxa : BigDecimal.ZERO);
         BigDecimal totalSaque = valor.add(custoSaque);
 
         if (this.getSaldo().add(limite != null ? limite : BigDecimal.ZERO).compareTo(totalSaque) < 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para saque, considerando o limite.");
+            throw new SaldoInsuficienteException();
         }
-        this.setSaldo(this.getSaldo().subtract(valor));
+        this.setSaldo(this.getSaldo().subtract(totalSaque));
     }
 }

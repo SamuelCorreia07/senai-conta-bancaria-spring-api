@@ -3,6 +3,8 @@ package com.senai.senai_conta_bancaria_spring_api.application.service;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.ClienteRegistroDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.ClienteResponseDTO;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Cliente;
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.EntidadeNaoEncontradaException;
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.PossuiContaAtivaDoTipoException;
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class ClienteService {
         boolean contaTipoExistente = contas.stream()
                 .anyMatch(conta -> conta.getClass().equals(novaConta.getClass()) && conta.isAtiva());
 
-        if (contaTipoExistente) throw new IllegalArgumentException("O cliente já possui uma conta ativa do tipo: " + novaConta.getClass().getSimpleName());
+        if (contaTipoExistente) throw new PossuiContaAtivaDoTipoException(dto.cpf(), novaConta.getClass().getSimpleName());
 
         clienteExistente.getContas().add(novaConta);
 
@@ -61,6 +63,6 @@ public class ClienteService {
 
     private Cliente getClienteAtivoPorCpf(String cpf) {
         return repository.findByCpfAndAtivoTrue(cpf)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente com CPF " + cpf + " não encontrado ou inativo."));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente", "CPF", cpf));
     }
 }
