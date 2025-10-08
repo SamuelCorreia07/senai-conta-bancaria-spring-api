@@ -57,11 +57,6 @@ public class ContaService {
         repository.save(conta);
     }
 
-    private Conta getContaAtivaPorNumero(String numeroDaConta) {
-        return repository.findByNumeroDaContaAndAtivaTrue(numeroDaConta)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta", "número", numeroDaConta));
-    }
-
     public ContaResumoDTO sacar(String numeroDaConta, OperacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         conta.sacar(dto.valor());
@@ -91,5 +86,10 @@ public class ContaService {
             return ContaResumoDTO.fromEntity(repository.save(poupanca));
         }
         throw new RendimentoInvalidoException();
+    }
+
+    private Conta getContaAtivaPorNumero(String numeroDaConta) {
+        return repository.findByNumeroDaContaAndAtivaTrue(numeroDaConta)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta", "número", numeroDaConta));
     }
 }

@@ -1,5 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
+import com.senai.senai_conta_bancaria_spring_api.application.dto.ContaResumoDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,4 +35,10 @@ public class Cliente {
 
     @Column(nullable = false)
     private boolean ativo;
+
+    public boolean validarContaExistente(Conta novaConta) {
+        return contas.stream()
+                .anyMatch(conta -> conta.getClass().equals(novaConta.getClass()) && conta.isAtiva());
+
+    }
 }

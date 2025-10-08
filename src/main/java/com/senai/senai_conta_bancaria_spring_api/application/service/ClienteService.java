@@ -4,7 +4,7 @@ import com.senai.senai_conta_bancaria_spring_api.application.dto.ClienteRegistro
 import com.senai.senai_conta_bancaria_spring_api.application.dto.ClienteResponseDTO;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Cliente;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.EntidadeNaoEncontradaException;
-import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.PossuiContaAtivaDoTipoException;
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.ContaMesmoTipoException;
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,10 +25,11 @@ public class ClienteService {
         var contas = clienteExistente.getContas();
         var novaConta = dto.contaDTO().toEntity(clienteExistente);
 
-        boolean contaTipoExistente = contas.stream()
-                .anyMatch(conta -> conta.getClass().equals(novaConta.getClass()) && conta.isAtiva());
 
-        if (contaTipoExistente) throw new PossuiContaAtivaDoTipoException(dto.cpf(), novaConta.getClass().getSimpleName());
+
+        boolean contaTipoExistente = clienteExistente.validarContaExistente(novaConta);
+
+        if (contaTipoExistente) throw new ContaMesmoTipoException(dto.cpf(), novaConta.getClass().getSimpleName());
 
         clienteExistente.getContas().add(novaConta);
 
