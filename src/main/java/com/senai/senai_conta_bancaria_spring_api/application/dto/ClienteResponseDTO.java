@@ -1,11 +1,17 @@
 package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Cliente;
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.br.CPF;
+
 import java.util.List;
 
 public record ClienteResponseDTO(
+        @NotBlank
         String id,
+        @NotBlank
         String nome,
+        @CPF
         String cpf,
         List<ContaResumoDTO> contas
 ) {
