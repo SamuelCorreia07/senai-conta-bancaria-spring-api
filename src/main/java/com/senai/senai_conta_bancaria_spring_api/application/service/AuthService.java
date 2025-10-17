@@ -1,10 +1,10 @@
 package com.senai.senai_conta_bancaria_spring_api.application.service;
 
-import com.senai.modelo_autenticacao_autorizacao.application.dto.AuthDTO;
-import com.senai.modelo_autenticacao_autorizacao.domain.UsuarioNaoEncontradoException;
-import com.senai.modelo_autenticacao_autorizacao.domain.entity.Usuario;
-import com.senai.modelo_autenticacao_autorizacao.domain.repository.UsuarioRepository;
-import com.senai.modelo_autenticacao_autorizacao.infrastructure.security.JwtService;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.AuthDTO;
+import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.UsuarioNaoEncontradoException;
+import com.senai.senai_conta_bancaria_spring_api.domain.entity.Usuario;
+import com.senai.senai_conta_bancaria_spring_api.domain.repository.UsuarioRepository;
+import com.senai.senai_conta_bancaria_spring_api.infrastructure.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;

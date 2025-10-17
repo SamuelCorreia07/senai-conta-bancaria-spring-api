@@ -13,6 +13,10 @@ public record ClienteResponseDTO(
         String nome,
         @CPF
         String cpf,
+        @NotBlank
+        String email,
+        @NotBlank
+        String senha,
         List<ContaResumoDTO> contas
 ) {
     public static ClienteResponseDTO fromEntity(Cliente cliente) {
@@ -24,6 +28,8 @@ public record ClienteResponseDTO(
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getCpf(),
+                cliente.getEmail(),
+                cliente.getSenha(),
                 contasDTO
         );
     }

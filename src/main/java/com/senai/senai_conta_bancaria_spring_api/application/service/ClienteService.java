@@ -7,6 +7,7 @@ import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.EntidadeNaoEn
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.ContaMesmoTipoException;
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class ClienteService {
 
     private final ClienteRepository repository;
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ClienteResponseDTO registrarClienteOuAnexarConta(ClienteRegistroDTO dto) {
 
         var clienteExistente = repository.findByCpfAndAtivoTrue(dto.cpf()).orElseGet(
@@ -24,8 +26,6 @@ public class ClienteService {
         );
         var contas = clienteExistente.getContas();
         var novaConta = dto.contaDTO().toEntity(clienteExistente);
-
-
 
         boolean contaTipoExistente = clienteExistente.validarContaExistente(novaConta);
 
@@ -36,25 +36,30 @@ public class ClienteService {
         return ClienteResponseDTO.fromEntity(repository.save(clienteExistente));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public List<ClienteResponseDTO> listarClientesAtivos() {
         return repository.findAllByAtivoTrue().stream()
                 .map(ClienteResponseDTO::fromEntity)
                 .toList();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ClienteResponseDTO listarClienteAtivoPorCpf(String cpf) {
         var cliente = getClienteAtivoPorCpf(cpf);
         return ClienteResponseDTO.fromEntity(cliente);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ClienteResponseDTO atualizarCliente(String cpf, ClienteRegistroDTO dto) {
         var cliente = getClienteAtivoPorCpf(cpf);
 
         cliente.setNome(dto.nome());
         cliente.setCpf(dto.cpf());
+        cliente.setEmail(dto.email());
         return ClienteResponseDTO.fromEntity(repository.save(cliente));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public void deletarCliente(String cpf) {
         var cliente = getClienteAtivoPorCpf(cpf);
         cliente.setAtivo(false);

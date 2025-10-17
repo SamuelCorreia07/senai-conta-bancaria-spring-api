@@ -11,6 +11,7 @@ import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.EntidadeNaoEn
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.RendimentoInvalidoException;
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.ContaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class ContaService {
     private final ContaRepository repository;
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
     public List<ContaResumoDTO> listarContasAtivas() {
         return repository.findAllByAtivaTrue().stream()
                 .map(ContaResumoDTO::fromEntity)
@@ -31,12 +33,14 @@ public class ContaService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
     public ContaResumoDTO buscarContaPorNumero(String numeroDaConta) {
         return repository.findByNumeroDaContaAndAtivaTrue(numeroDaConta)
                 .map(ContaResumoDTO::fromEntity)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta", "número", numeroDaConta));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
     public ContaResumoDTO atualizarConta(String numeroDaConta, ContaAtualizacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
 
@@ -51,24 +55,28 @@ public class ContaService {
         return ContaResumoDTO.fromEntity(repository.save(conta));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
     public void deletarConta(String numeroDaConta) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         conta.setAtiva(false);
         repository.save(conta);
     }
 
+    @PreAuthorize("hasAnyRole('CLIENTE')")
     public ContaResumoDTO sacar(String numeroDaConta, OperacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         conta.sacar(dto.valor());
         return ContaResumoDTO.fromEntity(repository.save(conta));
     }
 
+    @PreAuthorize("hasAnyRole('CLIENTE')")
     public ContaResumoDTO depositar(String numeroDaConta, OperacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         conta.depositar(dto.valor());
         return ContaResumoDTO.fromEntity(repository.save(conta));
     }
 
+    @PreAuthorize("hasAnyRole('CLIENTE')")
     public ContaResumoDTO transferir(String numeroDaContaOrigem, TransferenciaDTO dto) {
         var contaOrigem = getContaAtivaPorNumero(numeroDaContaOrigem);
         var contaDestino = getContaAtivaPorNumero(dto.numeroContaDestino());
@@ -79,6 +87,7 @@ public class ContaService {
         return ContaResumoDTO.fromEntity(repository.save(contaOrigem));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ContaResumoDTO aplicarRendimento(String numeroDaConta) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         if (conta instanceof ContaPoupanca poupanca) {

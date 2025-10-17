@@ -99,17 +99,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ProblemDetail handleGenericException(Exception ex,
-                                                HttpServletRequest request) {
-        return ProblemDetailUtils.buildProblem(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Erro interno no servidor.",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationException(MethodArgumentNotValidException ex,
                                                 HttpServletRequest request) {
@@ -206,6 +195,17 @@ public class GlobalExceptionHandler {
         return ProblemDetailUtils.buildProblem(
                 HttpStatus.UNAUTHORIZED,
                 "Credenciais inválidas",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGenericException(Exception ex,
+                                                HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Erro interno no servidor.",
                 ex.getMessage(),
                 request.getRequestURI()
         );

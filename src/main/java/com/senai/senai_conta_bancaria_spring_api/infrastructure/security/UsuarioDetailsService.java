@@ -1,6 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.infrastructure.security;
 
-import com.senai.modelo_autenticacao_autorizacao.domain.repository.UsuarioRepository;
+import com.senai.senai_conta_bancaria_spring_api.domain.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
