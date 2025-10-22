@@ -8,6 +8,7 @@ import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.ContaMesmoTip
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository repository;
+    private final PasswordEncoder encoder;
 
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ClienteResponseDTO registrarClienteOuAnexarConta(ClienteRegistroDTO dto) {
@@ -24,6 +26,7 @@ public class ClienteService {
         var clienteExistente = repository.findByCpfAndAtivoTrue(dto.cpf()).orElseGet(
                 () -> repository.save(dto.toEntity())
         );
+        clienteExistente.setSenha(encoder.encode(dto.senha()));
         var contas = clienteExistente.getContas();
         var novaConta = dto.contaDTO().toEntity(clienteExistente);
 

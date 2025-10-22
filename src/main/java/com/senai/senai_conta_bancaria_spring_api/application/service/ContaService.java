@@ -55,7 +55,7 @@ public class ContaService {
         return ContaResumoDTO.fromEntity(repository.save(conta));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public void deletarConta(String numeroDaConta) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         conta.setAtiva(false);
