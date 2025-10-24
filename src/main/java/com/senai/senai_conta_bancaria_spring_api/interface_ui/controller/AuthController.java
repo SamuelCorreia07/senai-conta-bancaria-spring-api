@@ -2,6 +2,8 @@ package com.senai.senai_conta_bancaria_spring_api.interface_ui.controller;
 
 import com.senai.senai_conta_bancaria_spring_api.application.dto.AuthDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService auth;
 
+    @Operation(
+            summary = "Autenticação de usuário",
+            description = "Autentica um usuário com base nas credenciais fornecidas e retorna um token JWT.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Usuário autenticado com sucesso"),
+                    @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
+            }
+    )
     @PostMapping("/login")
     public ResponseEntity<AuthDTO.TokenResponse> login(@RequestBody AuthDTO.LoginRequest req) {
         String token = auth.login(req);

@@ -1,5 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,7 @@ import java.util.List;
 )
 public class Cliente extends Usuario{
 
+    @JsonBackReference
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Conta> contas;
 
