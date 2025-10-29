@@ -59,6 +59,7 @@ public class ClienteService {
         cliente.setNome(dto.nome());
         cliente.setCpf(dto.cpf());
         cliente.setEmail(dto.email());
+        cliente.setSenha(encoder.encode(dto.senha()));
         return ClienteResponseDTO.fromEntity(repository.save(cliente));
     }
 

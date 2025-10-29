@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,27 @@ public class ClienteController {
     @Operation(
             summary = "Registrar um novo cliente ou anexar uma conta a um cliente existente",
             description = "Registra um novo cliente no sistema ou anexa uma nova conta a um cliente existente com base no CPF fornecido.",
+            requestBody = @RequestBody(
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = ClienteRegistroDTO.class),
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "Exemplo válido", value = """
+                                        {
+                                          "nome": "João da Silva",
+                                          "cpf": "123.456.789-00",
+                                          "email": "joao@email.com",
+                                          "senha": "senha_segura",
+                                            "contaDTO": {
+                                                "numeroDaConta": "00012345-6",
+                                                "tipo": "CORRENTE",
+                                                "saldo": 1000.00
+                                            }
+                                        }
+                                    """
+                            )
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "201", description = "Cliente registrado com sucesso"),
                     @ApiResponse(
@@ -125,6 +147,22 @@ public class ClienteController {
             parameters = {
                     @Parameter(name = "cpf", description = "CPF do cliente a ser atualizado", required = true, schema = @Schema(type = "string") )
             },
+            requestBody = @RequestBody(
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = ClienteRegistroDTO.class),
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "Exemplo válido", value = """
+                                            {
+                                            "nome": "João da Silva Atualizado",
+                                            "cpf": "123.456.789-00",
+                                            "email": "joaosilva@email.com",
+                                            "senha": "nova_senha_segura",
+                                            }
+                                        """
+                            )
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso"),
                     @ApiResponse(responseCode = "404", description = "Cliente não encontrado",
