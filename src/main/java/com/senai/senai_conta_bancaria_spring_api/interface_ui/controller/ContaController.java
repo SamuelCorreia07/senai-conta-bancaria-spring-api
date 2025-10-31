@@ -11,6 +11,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Conta", description = "Operações relacionadas a contas bancárias")
+@SecurityRequirement(name = "Bearer Authentication")
 @RestController
 @RequestMapping("/api/conta")
 @RequiredArgsConstructor
@@ -151,6 +156,14 @@ public class ContaController {
             parameters = {
                     @Parameter(name = "numeroDaConta", description = "Número da conta onde o saque será realizado", required = true)
             },
+            requestBody = @RequestBody(
+                    description = "Valor a ser sacado da conta.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = OperacaoDTO.class),
+                            examples = @ExampleObject(value = "{\"valor\": 150.75}")
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Saque realizado com sucesso"),
                     @ApiResponse(responseCode = "404", description = "Conta não encontrada",
@@ -188,6 +201,14 @@ public class ContaController {
             parameters = {
                     @Parameter(name = "numeroDaConta", description = "Número da conta onde o depósito será realizado", required = true)
             },
+            requestBody = @RequestBody(
+                    description = "Valor a ser depositado na conta.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = OperacaoDTO.class),
+                            examples = @ExampleObject(value = "{\"valor\": 200.00}")
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Depósito realizado com sucesso"),
                     @ApiResponse(responseCode = "404", description = "Conta não encontrada",
@@ -225,6 +246,20 @@ public class ContaController {
             parameters = {
                     @Parameter(name = "numeroDaContaOrigem", description = "Número da conta de origem da transferência", required = true)
             },
+            requestBody = @RequestBody(
+                    description = "Detalhes da transferência, incluindo conta de destino e valor.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = TransferenciaDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "numeroDaContaDestino": "1234567890",
+                                      "valor": 100.00
+                                    }
+                                    """
+                            )
+                    )
+            ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Transferência realizada com sucesso"),
                     @ApiResponse(responseCode = "404", description = "Conta não encontrada",

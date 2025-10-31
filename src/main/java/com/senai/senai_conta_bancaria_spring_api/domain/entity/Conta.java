@@ -1,6 +1,7 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.SaldoInsuficienteException;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.TransferenciaParaMesmaContaException;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.ValorNegativoException;
@@ -38,6 +39,7 @@ public abstract class Conta {
     @Column(nullable = false)
     private boolean ativa;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", foreignKey = @ForeignKey(name = "fk_conta_cliente"))
     private Cliente cliente;
