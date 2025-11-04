@@ -157,6 +157,27 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
     }
+    @ExceptionHandler(PagamentoInvalidoException.class)
+    public ProblemDetail handlePagamentoInvalidoException(PagamentoInvalidoException ex,
+                                                          HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.BAD_REQUEST,
+                "Pagamento inválido.",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(TaxaInvalidaException.class)
+    public ProblemDetail handleTaxaInvalidaException(TaxaInvalidaException ex,
+                                                     HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.BAD_REQUEST,
+                "Taxa inválida.",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
         return ProblemDetailUtils.buildProblem(

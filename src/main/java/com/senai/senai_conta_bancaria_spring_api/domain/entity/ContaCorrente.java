@@ -39,4 +39,15 @@ public class ContaCorrente extends Conta{
         }
         this.setSaldo(this.getSaldo().subtract(totalSaque));
     }
+
+    @Override
+    public void debitar(BigDecimal valor) {
+        validarValorMaiorQueZero(valor, "Débito");
+
+        // Permite usar o limite para débito (pagamento)
+        if (this.getSaldo().add(limite != null ? limite : BigDecimal.ZERO).compareTo(valor) < 0) {
+            throw new SaldoInsuficienteException();
+        }
+        this.setSaldo(this.getSaldo().subtract(valor));
+    }
 }

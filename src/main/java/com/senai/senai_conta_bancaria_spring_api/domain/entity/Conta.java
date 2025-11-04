@@ -68,6 +68,14 @@ public abstract class Conta {
         contaDestino.depositar(valor);
     }
 
+    public void debitar(BigDecimal valor) {
+        validarValorMaiorQueZero(valor, "Débito");
+        if (this.saldo.compareTo(valor) < 0) {
+            throw new SaldoInsuficienteException();
+        }
+        this.saldo = this.saldo.subtract(valor);
+    }
+
     protected static void validarValorMaiorQueZero(BigDecimal valor, String operacao) {
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValorNegativoException(operacao);

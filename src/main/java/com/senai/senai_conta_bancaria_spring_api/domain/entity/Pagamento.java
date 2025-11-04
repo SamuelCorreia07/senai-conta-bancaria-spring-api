@@ -2,7 +2,11 @@ package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
 import com.senai.senai_conta_bancaria_spring_api.domain.enums.StatusPagamento;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,6 +33,9 @@ public class Pagamento {
 
     @Column(nullable = false, precision = 20, scale = 2)
     private BigDecimal valorPago;
+
+    @Column(nullable = false)
+    private BigDecimal valorTotalCobrado;
 
     @Column(nullable = false)
     private LocalDateTime dataPagamento;

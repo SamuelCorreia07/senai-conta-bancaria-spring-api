@@ -1,6 +1,7 @@
 package com.senai.senai_conta_bancaria_spring_api.application.service;
 
-import com.senai.senai_conta_bancaria_spring_api.application.dto.TaxaDTO;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.TaxaRegistroDTO;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.TaxaResponseDTO;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Taxa;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.EntidadeNaoEncontradaException;
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.TaxaRepository;
@@ -19,49 +20,48 @@ public class TaxaService {
     private final TaxaRepository repository;
 
     @PreAuthorize("hasRole('ADMIN')")
+    public TaxaResponseDTO registrarTaxa(TaxaRegistroDTO dto) {
+        Taxa taxa = dto.toEntity();
+        Taxa taxaSalva = repository.save(taxa);
+        return TaxaResponseDTO.fromEntity(taxaSalva);
+    }
+
     @Transactional(readOnly = true)
-    public List<TaxaDTO> listarTaxasAtivas() {
-        return repository.findAllByAtivoTrue().stream()
-                .map(TaxaDTO::fromEntity)
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<TaxaResponseDTO> listarTaxas() {
+        return repository.findAll().stream()
+                .map(TaxaResponseDTO::fromEntity)
                 .toList();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
-    public TaxaDTO buscarTaxaAtivaPorId(String id) {
-        return repository.findByIdAndAtivoTrue(id)
-                .map(TaxaDTO::fromEntity)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Taxa", "ID", id));
+    @PreAuthorize("hasRole('ADMIN')")
+    public TaxaResponseDTO buscarTaxaPorId(String id) {
+        Taxa taxa = getTaxaPorId(id);
+        return TaxaResponseDTO.fromEntity(taxa);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public TaxaDTO criarTaxa(TaxaDTO dto) { // <-- RENOMEADO
-        Taxa novaTaxa = dto.toEntity();
-        // O DTO já garante que a taxa é criada como "ativa = true"
-        Taxa taxaSalva = repository.save(novaTaxa);
-        return TaxaDTO.fromEntity(taxaSalva);
-    }
+    public TaxaResponseDTO atualizarTaxa(String id, TaxaRegistroDTO dto) {
+        Taxa taxa = getTaxaPorId(id);
 
-    @PreAuthorize("hasRole('ADMIN')")
-    public TaxaDTO atualizarTaxa(String id, TaxaDTO dto) {
-        Taxa taxa = getTaxaAtivaPorId(id);
         taxa.setDescricao(dto.descricao());
         taxa.setPercentual(dto.percentual());
         taxa.setValorFixo(dto.valorFixo());
-        Taxa taxaSalva = repository.save(taxa);
-        return TaxaDTO.fromEntity(taxaSalva);
+
+        Taxa taxaAtualizada = repository.save(taxa);
+        return TaxaResponseDTO.fromEntity(taxaAtualizada);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public void desativarTaxa(String id) {
-        Taxa taxa = getTaxaAtivaPorId(id);
+    public void deletarTaxa(String id) {
+        Taxa taxa = getTaxaPorId(id);
         taxa.setAtivo(false);
         repository.save(taxa);
     }
 
-    // Método utilitário privado para evitar repetição
-    private Taxa getTaxaAtivaPorId(String id) {
-        return repository.findByIdAndAtivoTrue(id)
+    private Taxa getTaxaPorId(String id) {
+        return repository.findById(id)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Taxa", "ID", id));
     }
 }
