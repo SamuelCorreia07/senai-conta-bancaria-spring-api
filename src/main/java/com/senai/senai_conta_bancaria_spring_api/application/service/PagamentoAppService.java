@@ -15,6 +15,8 @@ import com.senai.senai_conta_bancaria_spring_api.domain.repository.PagamentoRepo
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.TaxaRepository;
 import com.senai.senai_conta_bancaria_spring_api.domain.service.PagamentoDomainService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,10 +39,17 @@ public class PagamentoAppService {
     // Usamos 'NOT_SUPPORTED' pois vamos controlar a transação manualmente
     // para garantir que o pagamento seja salvo mesmo em caso de falha
     @Transactional(noRollbackFor = {SaldoInsuficienteException.class, PagamentoInvalidoException.class})
-    public PagamentoResponseDTO realizarPagamento(PagamentoRequestDTO dto) {
+    @PreAuthorize("hasRole('CLIENTE')") // Segurança a nível de método
+    public PagamentoResponseDTO realizarPagamento(PagamentoRequestDTO dto, String emailAutenticado) {
 
         Conta conta = contaRepository.findByNumeroDaContaAndAtivaTrue(dto.numeroDaContaOrigem())
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta", "número", dto.numeroDaContaOrigem()));
+
+        // Garante que o usuário logado é o dono da conta
+        if (!conta.getCliente().getEmail().equals(emailAutenticado)) {
+            // Lança uma exceção que será tratada pelo GlobalExceptionHandler
+            throw new AccessDeniedException("O usuário autenticado não tem permissão para usar esta conta.");
+        }
 
         List<Taxa> taxas = taxaRepository.findAllById(dto.taxaIds());
         if (taxas.size() != dto.taxaIds().size()) {
@@ -82,9 +92,25 @@ public class PagamentoAppService {
         // Se o pagamento falhou, lançamos a exceção para o controller
         // (o pagamento já foi salvo como FALHA)
         if (status != StatusPagamento.SUCESSO) {
+            if(status == StatusPagamento.FALHA_SALDO_INSUFICIENTE) throw new SaldoInsuficienteException();
             throw new PagamentoInvalidoException("Pagamento falhou. Motivo: " + status.name());
         }
 
         return PagamentoResponseDTO.fromEntity(pagamentoSalvo);
+    }
+
+    /**
+     * Lista todos os pagamentos (sucesso ou falha) associados ao usuário autenticado.
+     */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')") // Cliente pode ver o seu, Admin pode ver o de todos (se implementado)
+    public List<PagamentoResponseDTO> listarPagamentosDoUsuario(String emailAutenticado) {
+        // Se fosse um ADMIN, poderíamos ter uma lógica para listar todos
+        // if (isAdmin) { return pagamentoRepository.findAll()... }
+
+        // Para o CLIENTE, filtra pelo email
+        return pagamentoRepository.findAllByClienteEmail(emailAutenticado).stream()
+                .map(PagamentoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 }
