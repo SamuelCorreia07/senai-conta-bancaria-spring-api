@@ -26,6 +26,10 @@ public class Cliente extends Usuario{
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Conta> contas;
 
+    @JsonManagedReference
+    @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+    private DispositivoIoT dispositivoIoT;
+
     public boolean validarContaExistente(Conta novaConta) {
         return contas.stream()
                 .anyMatch(conta -> conta.getClass().equals(novaConta.getClass()) && conta.isAtiva());

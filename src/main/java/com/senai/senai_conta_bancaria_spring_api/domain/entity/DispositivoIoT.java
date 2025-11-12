@@ -22,7 +22,7 @@ public class DispositivoIoT {
     private String chavePublica;
 
     @Column(nullable = false)
-    private boolean ativo = true;
+    private boolean ativo = false;
 
     @OneToOne
     @JoinColumn(name = "cliente_id", nullable = false, unique = true, foreignKey = @ForeignKey(name = "fk_dispositivo_cliente"))

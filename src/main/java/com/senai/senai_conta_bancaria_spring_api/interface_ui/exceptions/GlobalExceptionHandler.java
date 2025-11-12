@@ -178,17 +178,18 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
     }
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+
+    @ExceptionHandler(DispositivoJaVinculadoException.class)
+    public ProblemDetail handleDispositivoJaVinculadoException(DispositivoJaVinculadoException ex,
+                                                               HttpServletRequest request) {
         return ProblemDetailUtils.buildProblem(
-                HttpStatus.METHOD_NOT_ALLOWED,
-                "Método não permitido",
-                String.format("O método %s não é suportado para esta rota. Métodos suportados: %s",
-                        ex.getMethod(),
-                        String.join(", ", ex.getSupportedMethods() != null ? ex.getSupportedMethods() : new String[]{})),
+                HttpStatus.BAD_REQUEST,
+                "Dispositivo já vinculado.",
+                ex.getMessage(),
                 request.getRequestURI()
         );
     }
+
     @ExceptionHandler(AuthenticationException.class)
     public ProblemDetail handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
         return ProblemDetailUtils.buildProblem(
@@ -208,6 +209,19 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
     }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.METHOD_NOT_ALLOWED,
+                "Método não permitido",
+                String.format("O método %s não é suportado para esta rota. Métodos suportados: %s",
+                        ex.getMethod(),
+                        String.join(", ", ex.getSupportedMethods() != null ? ex.getSupportedMethods() : new String[]{})),
+                request.getRequestURI()
+        );
+    }
+
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
