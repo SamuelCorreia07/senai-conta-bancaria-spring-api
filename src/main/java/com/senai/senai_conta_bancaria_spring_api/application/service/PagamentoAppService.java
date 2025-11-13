@@ -1,7 +1,9 @@
 package com.senai.senai_conta_bancaria_spring_api.application.service;
 
+import com.senai.senai_conta_bancaria_spring_api.application.dto.AutenticacaoIoTPayloadDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.PagamentoRequestDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.PagamentoResponseDTO;
+import com.senai.senai_conta_bancaria_spring_api.domain.entity.Cliente;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Conta;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Pagamento;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Taxa;
@@ -35,6 +37,36 @@ public class PagamentoAppService {
     private final ContaRepository contaRepository;
     private final TaxaRepository taxaRepository;
     private final PagamentoDomainService domainService;
+    private final AutenticacaoIoTService autenticacaoIoTService;
+
+    @Transactional
+    @PreAuthorize("hasRole('CLIENTE')")
+    public AutenticacaoIoTPayloadDTO iniciarPagamento(PagamentoRequestDTO dto, String emailAutenticado) {
+        var conta = getContaAtivaPorNumero(dto.numeroDaContaOrigem());
+
+        // Validação de segurança
+        if (!conta.getCliente().getEmail().equals(emailAutenticado)) {
+            throw new AccessDeniedException("O usuário autenticado não tem permissão para usar esta conta.");
+        }
+
+        Cliente cliente = conta.getCliente();
+
+        return autenticacaoIoTService.iniciarAutenticacao(cliente);
+    }
+
+    //Confirma e executa o pagamento após a validação do IoT.
+    @PreAuthorize("hasRole('CLIENTE')")
+    public PagamentoResponseDTO confirmarPagamento(PagamentoRequestDTO dto, String emailAutenticado) {
+        var conta = getContaAtivaPorNumero(dto.numeroDaContaOrigem());
+
+        if (!conta.getCliente().getEmail().equals(emailAutenticado)) {
+            throw new AccessDeniedException("O usuário autenticado não tem permissão para usar esta conta.");
+        }
+
+        autenticacaoIoTService.verificarEValidarCodigo(conta.getCliente());
+
+        return this.realizarPagamento(dto, emailAutenticado);
+    }
 
     // Usamos 'NOT_SUPPORTED' pois vamos controlar a transação manualmente
     // para garantir que o pagamento seja salvo mesmo em caso de falha
@@ -42,12 +74,10 @@ public class PagamentoAppService {
     @PreAuthorize("hasRole('CLIENTE')") // Segurança a nível de método
     public PagamentoResponseDTO realizarPagamento(PagamentoRequestDTO dto, String emailAutenticado) {
 
-        Conta conta = contaRepository.findByNumeroDaContaAndAtivaTrue(dto.numeroDaContaOrigem())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta", "número", dto.numeroDaContaOrigem()));
+        var conta = getContaAtivaPorNumero(dto.numeroDaContaOrigem());
 
-        // Garante que o usuário logado é o dono da conta
+        // Validação de segurança
         if (!conta.getCliente().getEmail().equals(emailAutenticado)) {
-            // Lança uma exceção que será tratada pelo GlobalExceptionHandler
             throw new AccessDeniedException("O usuário autenticado não tem permissão para usar esta conta.");
         }
 
@@ -99,18 +129,17 @@ public class PagamentoAppService {
         return PagamentoResponseDTO.fromEntity(pagamentoSalvo);
     }
 
-    /**
-     * Lista todos os pagamentos (sucesso ou falha) associados ao usuário autenticado.
-     */
+    // Lista todos os pagamentos (sucesso ou falha) associados ao usuário autenticado.
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')") // Cliente pode ver o seu, Admin pode ver o de todos (se implementado)
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
     public List<PagamentoResponseDTO> listarPagamentosDoUsuario(String emailAutenticado) {
-        // Se fosse um ADMIN, poderíamos ter uma lógica para listar todos
-        // if (isAdmin) { return pagamentoRepository.findAll()... }
-
-        // Para o CLIENTE, filtra pelo email
         return pagamentoRepository.findAllByClienteEmail(emailAutenticado).stream()
                 .map(PagamentoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    private Conta getContaAtivaPorNumero(String numeroDaConta) {
+        return contaRepository.findByNumeroDaContaAndAtivaTrue(numeroDaConta)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta", "número", numeroDaConta));
     }
 }

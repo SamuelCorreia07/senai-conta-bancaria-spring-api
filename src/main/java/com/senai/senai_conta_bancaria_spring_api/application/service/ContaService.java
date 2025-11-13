@@ -1,9 +1,7 @@
 package com.senai.senai_conta_bancaria_spring_api.application.service;
 
-import com.senai.senai_conta_bancaria_spring_api.application.dto.ContaAtualizacaoDTO;
-import com.senai.senai_conta_bancaria_spring_api.application.dto.OperacaoDTO;
-import com.senai.senai_conta_bancaria_spring_api.application.dto.ContaResumoDTO;
-import com.senai.senai_conta_bancaria_spring_api.application.dto.TransferenciaDTO;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.*;
+import com.senai.senai_conta_bancaria_spring_api.domain.entity.Cliente;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Conta;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.ContaCorrente;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.ContaPoupanca;
@@ -23,6 +21,7 @@ import java.util.List;
 public class ContaService {
 
     private final ContaRepository repository;
+    private final AutenticacaoIoTService autenticacaoIoTService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
@@ -62,6 +61,13 @@ public class ContaService {
         repository.save(conta);
     }
 
+    public AutenticacaoIoTPayloadDTO iniciarSaque(String numeroDaConta, OperacaoDTO dto) {
+        var conta = getContaAtivaPorNumero(numeroDaConta);
+        Cliente cliente = conta.getCliente();
+
+        return autenticacaoIoTService.iniciarAutenticacao(cliente);
+    }
+
     @PreAuthorize("hasAnyRole('CLIENTE')")
     public ContaResumoDTO sacar(String numeroDaConta, OperacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
@@ -70,10 +76,27 @@ public class ContaService {
     }
 
     @PreAuthorize("hasAnyRole('CLIENTE')")
+    public ContaResumoDTO confirmarSaque(String numeroDaConta, OperacaoDTO dto) {
+        var conta = getContaAtivaPorNumero(numeroDaConta);
+        autenticacaoIoTService.verificarEValidarCodigo(conta.getCliente());
+        conta.sacar(dto.valor());
+        Conta contaSalva = repository.save(conta);
+
+        return ContaResumoDTO.fromEntity(contaSalva);
+    }
+
+    @PreAuthorize("hasAnyRole('CLIENTE')")
     public ContaResumoDTO depositar(String numeroDaConta, OperacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         conta.depositar(dto.valor());
         return ContaResumoDTO.fromEntity(repository.save(conta));
+    }
+
+    public AutenticacaoIoTPayloadDTO iniciarTransferencia(String numeroDaContaOrigem, TransferenciaDTO dto) {
+        var contaOrigem = getContaAtivaPorNumero(numeroDaContaOrigem);
+        getContaAtivaPorNumero(dto.numeroContaDestino());
+        Cliente cliente = contaOrigem.getCliente();
+        return autenticacaoIoTService.iniciarAutenticacao(cliente);
     }
 
     @PreAuthorize("hasAnyRole('CLIENTE')")
@@ -85,6 +108,21 @@ public class ContaService {
 
         repository.save(contaDestino);
         return ContaResumoDTO.fromEntity(repository.save(contaOrigem));
+    }
+
+    @PreAuthorize("hasAnyRole('CLIENTE')")
+    public ContaResumoDTO confirmarTransferencia(String numeroDaContaOrigem, TransferenciaDTO dto) {
+        var contaOrigem = getContaAtivaPorNumero(numeroDaContaOrigem);
+        var contaDestino = getContaAtivaPorNumero(dto.numeroContaDestino());
+
+        autenticacaoIoTService.verificarEValidarCodigo(contaOrigem.getCliente());
+
+        contaOrigem.transferir(contaDestino, dto.valor());
+
+        repository.save(contaDestino);
+        Conta contaOrigemSalva = repository.save(contaOrigem);
+
+        return ContaResumoDTO.fromEntity(contaOrigemSalva);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")

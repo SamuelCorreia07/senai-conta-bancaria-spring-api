@@ -200,6 +200,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AutenticacaoIoTException.class)
+    public ProblemDetail handleAutenticacaoIoTException(AutenticacaoIoTException ex,
+                                                        HttpServletRequest request) {
+        return ProblemDetailUtils.buildProblem(
+                HttpStatus.BAD_REQUEST,
+                "Falha na autenticação IoT.",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
         return ProblemDetailUtils.buildProblem(

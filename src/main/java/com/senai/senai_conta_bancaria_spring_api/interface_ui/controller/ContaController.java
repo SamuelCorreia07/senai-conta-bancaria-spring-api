@@ -1,10 +1,8 @@
 package com.senai.senai_conta_bancaria_spring_api.interface_ui.controller;
 
-import com.senai.senai_conta_bancaria_spring_api.application.dto.ContaAtualizacaoDTO;
-import com.senai.senai_conta_bancaria_spring_api.application.dto.OperacaoDTO;
-import com.senai.senai_conta_bancaria_spring_api.application.dto.ContaResumoDTO;
-import com.senai.senai_conta_bancaria_spring_api.application.dto.TransferenciaDTO;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.*;
 import com.senai.senai_conta_bancaria_spring_api.application.service.ContaService;
+import com.rafaelcosta.spring_mqttx.domain.annotation.MqttPublisher;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -190,9 +188,23 @@ public class ContaController {
             }
     )
     @PostMapping("/{numeroDaConta}/sacar")
-    public ResponseEntity<ContaResumoDTO> sacar(@PathVariable String numeroDaConta,
+    @MqttPublisher("banco/autenticacao/iniciar")
+    public ResponseEntity<AutenticacaoIoTPayloadDTO> sacar(@PathVariable String numeroDaConta,
                                                 @Valid @RequestBody OperacaoDTO dto) {
-        return ResponseEntity.ok(service.sacar(numeroDaConta, dto));
+        AutenticacaoIoTPayloadDTO payload = service.iniciarSaque(numeroDaConta, dto);
+        return ResponseEntity.ok(payload);
+    }
+
+    @Operation(
+            summary = "Confirmar Saque (Pós-IoT)",
+            description = "Confirma e executa o saque após a validação biométrica."
+    )
+    @PostMapping("/{numeroDaConta}/sacar/confirmar")
+    public ResponseEntity<ContaResumoDTO> confirmarSaque(@PathVariable String numeroDaConta,
+                                                         @Valid @RequestBody OperacaoDTO dto) {
+
+        ContaResumoDTO conta = service.confirmarSaque(numeroDaConta, dto);
+        return ResponseEntity.ok(conta);
     }
 
     @Operation(
@@ -285,9 +297,63 @@ public class ContaController {
             }
     )
     @PostMapping("/{numeroDaContaOrigem}/transferir")
-    public ResponseEntity<ContaResumoDTO> transferir(@PathVariable String numeroDaContaOrigem,
+    @MqttPublisher("banco/autenticacao/iniciar")
+    public ResponseEntity<AutenticacaoIoTPayloadDTO> transferir(@PathVariable String numeroDaContaOrigem,
                                                      @Valid @RequestBody TransferenciaDTO dto) {
-        return ResponseEntity.ok(service.transferir(numeroDaContaOrigem, dto));
+        AutenticacaoIoTPayloadDTO payload = service.iniciarTransferencia(numeroDaContaOrigem, dto);
+        return ResponseEntity.ok(payload);
+    }
+
+    @Operation(
+            summary = "Confirmar Transferência (Pós-IoT)",
+            description = "Confirma e executa a transferência após a validação biométrica.",
+            parameters = {
+                    @Parameter(name = "numeroDaContaOrigem", description = "Número da conta de origem da transferência", required = true)
+            },
+            requestBody = @RequestBody(
+                    description = "Detalhes da transferência, incluindo conta de destino e valor.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = TransferenciaDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "numeroDaContaDestino": "1234567890",
+                                      "valor": 100.00
+                                    }
+                                    """
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Transferência confirmada com sucesso"),
+                    @ApiResponse(responseCode = "404", description = "Conta não encontrada",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ContaResumoDTO.class),
+                                    examples = {
+                                            @ExampleObject(
+                                                    name = "Conta não encontrada",
+                                                    value = """
+                                                            {
+                                                              "type": "https://example.com/probs/conta-nao-encontrada",
+                                                              "title": "Entidade não encontrada.",
+                                                              "status": 404,
+                                                              "detail": "A conta com o número fornecido não foi encontrada.",
+                                                              "instance": "/api/conta/{numeroDaContaOrigem}/transferir/confirmar"
+                                                            }
+                                                            """
+                                            )
+                                    }
+                            )),
+                    @ApiResponse(responseCode = "400", description = "Saldo insuficiente ou dados inválidos")
+            }
+    )
+    @PostMapping("/{numeroDaContaOrigem}/transferir/confirmar")
+    public ResponseEntity<ContaResumoDTO> confirmarTransferencia(@PathVariable String numeroDaContaOrigem,
+                                                                 @Valid @RequestBody TransferenciaDTO dto) {
+
+        ContaResumoDTO conta = service.confirmarTransferencia(numeroDaContaOrigem, dto);
+        return ResponseEntity.ok(conta);
     }
 
     @Operation(

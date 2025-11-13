@@ -1,5 +1,7 @@
 package com.senai.senai_conta_bancaria_spring_api.interface_ui.controller;
 
+import com.rafaelcosta.spring_mqttx.domain.annotation.MqttPublisher;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.AutenticacaoIoTPayloadDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.PagamentoRequestDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.PagamentoResponseDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.service.PagamentoAppService;
@@ -72,17 +74,52 @@ public class PagamentoController {
             }
     )
     @PostMapping
-    public ResponseEntity<PagamentoResponseDTO> realizarPagamento(
+    @MqttPublisher("banco/autenticacao/iniciar")
+    public ResponseEntity<AutenticacaoIoTPayloadDTO> realizarPagamento(
             @Valid @RequestBody PagamentoRequestDTO dto,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         // Passamos o email (username) do usuário autenticado para o service
         String emailAutenticado = userDetails.getUsername();
-        PagamentoResponseDTO response = service.realizarPagamento(dto, emailAutenticado);
+        AutenticacaoIoTPayloadDTO payload = service.iniciarPagamento(dto, emailAutenticado);
 
-        return ResponseEntity.created(
-                URI.create("/api/pagamentos/" + response.id())
-        ).body(response);
+        return ResponseEntity.ok(payload);
+    }
+
+    @Operation(
+            summary = "Confirmar Pagamento",
+            description = "Confirma e executa o pagamento após a validação biométrica.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Pagamento confirmado com sucesso"),
+                    @ApiResponse(responseCode = "400", description = "Falha na confirmação do pagamento (Ex: Autenticação IoT inválida ou expirada)",
+                            content = @Content(mediaType = "application/json",
+                                    examples = @ExampleObject(name = "Autenticação IoT Inválida",
+                                            value = """
+                                                      {
+                                                        "type": "https://example.com/probs/autenticacao-iot-invalida",
+                                                        "title": "Autenticação IoT inválida ou expirada.",
+                                                        "status": 400,
+                                                        "detail": "O código de autenticação IoT fornecido é inválido ou expirou.",
+                                                        "instance": "/api/pagamentos/confirmar"
+                                                      }
+                                                    """
+                                    )
+                            )
+                    ),
+                    @ApiResponse(responseCode = "403", description = "Acesso negado (Conta não pertence ao usuário)"),
+                    @ApiResponse(responseCode = "404", description = "Conta ou Taxa não encontrada")
+            }
+    )
+    @PostMapping("/confirmar")
+    public ResponseEntity<PagamentoResponseDTO> confirmarPagamento(
+            @Valid @RequestBody PagamentoRequestDTO dto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String emailAutenticado = userDetails.getUsername();
+
+        PagamentoResponseDTO response = service.confirmarPagamento(dto, emailAutenticado);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
