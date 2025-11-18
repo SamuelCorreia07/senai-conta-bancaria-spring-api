@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final AuthService auth;
 
     @Operation(
@@ -46,6 +47,7 @@ public class AuthController {
     )
     @PostMapping("/login")
     public ResponseEntity<AuthDTO.TokenResponse> login(@RequestBody AuthDTO.LoginRequest req) {
+        System.out.println("Recebendo requisição de login para o email: " + req.email());
         String token = auth.login(req);
         return ResponseEntity.ok(new AuthDTO.TokenResponse(token));
     }

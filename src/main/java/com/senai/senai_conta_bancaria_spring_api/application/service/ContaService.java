@@ -69,13 +69,6 @@ public class ContaService {
     }
 
     @PreAuthorize("hasAnyRole('CLIENTE')")
-    public ContaResumoDTO sacar(String numeroDaConta, OperacaoDTO dto) {
-        var conta = getContaAtivaPorNumero(numeroDaConta);
-        conta.sacar(dto.valor());
-        return ContaResumoDTO.fromEntity(repository.save(conta));
-    }
-
-    @PreAuthorize("hasAnyRole('CLIENTE')")
     public ContaResumoDTO confirmarSaque(String numeroDaConta, OperacaoDTO dto) {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         autenticacaoIoTService.verificarEValidarCodigo(conta.getCliente());
@@ -97,17 +90,6 @@ public class ContaService {
         getContaAtivaPorNumero(dto.numeroContaDestino());
         Cliente cliente = contaOrigem.getCliente();
         return autenticacaoIoTService.iniciarAutenticacao(cliente);
-    }
-
-    @PreAuthorize("hasAnyRole('CLIENTE')")
-    public ContaResumoDTO transferir(String numeroDaContaOrigem, TransferenciaDTO dto) {
-        var contaOrigem = getContaAtivaPorNumero(numeroDaContaOrigem);
-        var contaDestino = getContaAtivaPorNumero(dto.numeroContaDestino());
-
-        contaOrigem.transferir(contaDestino, dto.valor());
-
-        repository.save(contaDestino);
-        return ContaResumoDTO.fromEntity(repository.save(contaOrigem));
     }
 
     @PreAuthorize("hasAnyRole('CLIENTE')")

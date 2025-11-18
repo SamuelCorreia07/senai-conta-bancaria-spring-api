@@ -19,6 +19,7 @@ public class AuthService {
     private final JwtService jwt;
 
     public String login(AuthDTO.LoginRequest req) {
+        System.out.println("Autenticando usuário: " + req.email());
         Usuario usuario = usuarios.findByEmail(req.email())
                 .orElseThrow(() ->  new UsuarioNaoEncontradoException("Usuário não encontrado"));
 
