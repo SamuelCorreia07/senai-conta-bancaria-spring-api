@@ -1,15 +1,14 @@
 package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Resposta da API REST informando que a autenticação foi iniciada.
  */
 public record OperacaoPendenteResponseDTO(
-        @JsonProperty("mensagem")
+        @NotBlank
         String mensagem,
-
-        @JsonProperty("codigoId")
+        @NotBlank
         String codigoId
 ) {
 }

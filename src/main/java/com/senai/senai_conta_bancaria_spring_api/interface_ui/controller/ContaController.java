@@ -78,6 +78,18 @@ public class ContaController {
     @Operation(
             summary = "Atualizar dados da conta",
             description = "Atualiza os dados de uma conta bancária específica com base no número da conta fornecido.",
+            requestBody = @RequestBody(
+                    description = "Dados atualizados da conta.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = ContaAtualizacaoDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      
+                                    }
+                                    """)
+                    )
+            ),
             parameters = {
                     @Parameter(name = "numeroDaConta", description = "Número da conta a ser atualizada", required = true)
             },

@@ -11,11 +11,9 @@ import lombok.Builder;
 @Builder
 public record ValidacaoIoTRequestDTO(
         @NotBlank
-        @JsonProperty("idCliente")
         String idCliente,
 
         @NotBlank
-        @JsonProperty("codigo")
         String codigo
 ) {
 }

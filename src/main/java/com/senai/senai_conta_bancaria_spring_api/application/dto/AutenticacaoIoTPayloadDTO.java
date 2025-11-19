@@ -1,6 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 /**
@@ -9,13 +9,11 @@ import lombok.Builder;
  */
 @Builder
 public record AutenticacaoIoTPayloadDTO(
-        @JsonProperty("idCliente")
+        @NotBlank
         String idCliente,
-
-        @JsonProperty("mensagem")
+        @NotBlank
         String mensagem,
-
-        @JsonProperty("codigoId")
+        @NotBlank
         String codigoId
 ) {
 }

@@ -46,7 +46,7 @@ public class AuthController {
             }
     )
     @PostMapping("/login")
-    public ResponseEntity<AuthDTO.TokenResponse> login(@RequestBody AuthDTO.LoginRequest req) {
+    public ResponseEntity<AuthDTO.TokenResponse> login(@org.springframework.web.bind.annotation.RequestBody AuthDTO.LoginRequest req) {
         System.out.println("Recebendo requisição de login para o email: " + req.email());
         String token = auth.login(req);
         return ResponseEntity.ok(new AuthDTO.TokenResponse(token));

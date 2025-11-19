@@ -2,6 +2,7 @@ package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Pagamento;
 import com.senai.senai_conta_bancaria_spring_api.domain.enums.StatusPagamento;
+import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
