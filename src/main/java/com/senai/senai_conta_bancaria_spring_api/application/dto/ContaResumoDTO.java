@@ -5,14 +5,17 @@ import com.senai.senai_conta_bancaria_spring_api.domain.entity.Conta;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.ContaCorrente;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.ContaPoupanca;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.TipoDeContaInvalidaException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
 public record ContaResumoDTO(
+        @Schema(description = "Número da conta bancária", example = "12345-6")
         @NotBlank
         String numeroDaConta,
+        @Schema(description = "Tipo da conta bancária", example = "CORRENTE")
         @NotBlank
         String tipo,
         @NotNull

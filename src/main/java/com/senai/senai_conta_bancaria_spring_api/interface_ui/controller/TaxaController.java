@@ -5,6 +5,7 @@ import com.senai.senai_conta_bancaria_spring_api.application.dto.TaxaResponseDTO
 import com.senai.senai_conta_bancaria_spring_api.application.service.TaxaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -46,7 +47,7 @@ public class TaxaController {
             }
     )
     @PostMapping
-    public ResponseEntity<TaxaResponseDTO> registrarTaxa(@Valid @RequestBody TaxaRegistroDTO dto) {
+    public ResponseEntity<TaxaResponseDTO> registrarTaxa(@Valid @org.springframework.web.bind.annotation.RequestBody TaxaRegistroDTO dto) {
         TaxaResponseDTO novaTaxa = service.registrarTaxa(dto);
         return ResponseEntity.created(
                 URI.create("/api/taxas/" + novaTaxa.id())
@@ -57,7 +58,11 @@ public class TaxaController {
             summary = "Listar todas as taxas",
             description = "Retorna uma lista de todas as taxas cadastradas no sistema. Requer permissão de ADMIN.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Lista de taxas retornada com sucesso"),
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Lista de taxas",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = TaxaResponseDTO.class)))
+                    ),
                     @ApiResponse(responseCode = "403", description = "Acesso negado (requer ADMIN)")
             }
     )
@@ -121,7 +126,7 @@ public class TaxaController {
     )
     @PutMapping("/{id}")
     public ResponseEntity<TaxaResponseDTO> atualizarTaxa(@PathVariable String id,
-                                                         @Valid @RequestBody TaxaRegistroDTO dto) {
+                                                         @Valid @org.springframework.web.bind.annotation.RequestBody TaxaRegistroDTO dto) {
         return ResponseEntity.ok(service.atualizarTaxa(id, dto));
     }
 

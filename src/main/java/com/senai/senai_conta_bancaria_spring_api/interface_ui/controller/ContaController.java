@@ -120,7 +120,7 @@ public class ContaController {
     )
     @PutMapping ("/{numeroDaConta}")
     public ResponseEntity<ContaResumoDTO> atualizarConta(@PathVariable String numeroDaConta,
-                                                         @Valid @RequestBody ContaAtualizacaoDTO dto) {
+                                                         @Valid @org.springframework.web.bind.annotation.RequestBody ContaAtualizacaoDTO dto) {
         return ResponseEntity.ok(service.atualizarConta(numeroDaConta, dto));
     }
 
@@ -161,8 +161,8 @@ public class ContaController {
     }
 
     @Operation(
-            summary = "Sacar valor da conta",
-            description = "Realiza um saque em uma conta bancária específica com base no número da conta fornecido.",
+            summary = "Iniciar Saque (Requer Autenticação IoT)",
+            description = "Inicia o processo de saque. Envia uma notificação MQTT para o dispositivo do cliente e retorna um payload com instruções. A operação não é concluída até a confirmação.",
             parameters = {
                     @Parameter(name = "numeroDaConta", description = "Número da conta onde o saque será realizado", required = true)
             },
@@ -175,45 +175,39 @@ public class ContaController {
                     )
             ),
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Saque realizado com sucesso"),
-                    @ApiResponse(responseCode = "404", description = "Conta não encontrada",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ContaResumoDTO.class),
-                                    examples = {
-                                            @ExampleObject(
-                                                    name = "Conta não encontrada",
-                                                    value = """
-                                                            {
-                                                              "type": "https://example.com/probs/conta-nao-encontrada",
-                                                              "title": "Entidade não encontrada.",
-                                                              "status": 404,
-                                                              "detail": "A conta com o número fornecido não foi encontrada.",
-                                                              "instance": "/api/conta/{numeroDaConta}/sacar"
-                                                            }
-                                                            """
-                                            )
-                                    }
-                            )
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Autenticação IoT iniciada com sucesso",
+                            content = @Content(schema = @Schema(implementation = AutenticacaoIoTPayloadDTO.class))
                     ),
-                    @ApiResponse(responseCode = "400", description = "Saldo insuficiente ou dados inválidos")
+                    @ApiResponse(responseCode = "404", description = "Conta não encontrada"),
+                    @ApiResponse(responseCode = "400", description = "Erro de validação ou dispositivo inativo")
             }
     )
     @PostMapping("/{numeroDaConta}/sacar")
     @MqttPublisher("banco/autenticacao/iniciar")
     public ResponseEntity<AutenticacaoIoTPayloadDTO> sacar(@PathVariable String numeroDaConta,
-                                                @Valid @RequestBody OperacaoDTO dto) {
+                                                @Valid @org.springframework.web.bind.annotation.RequestBody OperacaoDTO dto) {
         AutenticacaoIoTPayloadDTO payload = service.iniciarSaque(numeroDaConta, dto);
         return ResponseEntity.ok(payload);
     }
 
     @Operation(
-            summary = "Confirmar Saque (Pós-IoT)",
-            description = "Confirma e executa o saque após a validação biométrica."
+            summary = "Confirmar Saque (Pós-Validação IoT)",
+            description = "Executa efetivamente o saque após o dispositivo IoT ter validado o código de autenticação.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Saque realizado com sucesso",
+                            content = @Content(schema = @Schema(implementation = ContaResumoDTO.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Autenticação IoT não encontrada, expirada ou inválida"),
+                    @ApiResponse(responseCode = "404", description = "Conta não encontrada")
+            }
     )
     @PostMapping("/{numeroDaConta}/sacar/confirmar")
     public ResponseEntity<ContaResumoDTO> confirmarSaque(@PathVariable String numeroDaConta,
-                                                         @Valid @RequestBody OperacaoDTO dto) {
+                                                         @Valid @org.springframework.web.bind.annotation.RequestBody OperacaoDTO dto) {
 
         ContaResumoDTO conta = service.confirmarSaque(numeroDaConta, dto);
         return ResponseEntity.ok(conta);
@@ -260,7 +254,7 @@ public class ContaController {
     )
     @PostMapping("/{numeroDaConta}/depositar")
     public ResponseEntity<ContaResumoDTO> depositar(@PathVariable String numeroDaConta,
-                                                    @Valid @RequestBody OperacaoDTO dto) {
+                                                    @Valid @org.springframework.web.bind.annotation.RequestBody OperacaoDTO dto) {
         return ResponseEntity.ok(service.depositar(numeroDaConta, dto));
     }
 
@@ -311,7 +305,7 @@ public class ContaController {
     @PostMapping("/{numeroDaContaOrigem}/transferir")
     @MqttPublisher("banco/autenticacao/iniciar")
     public ResponseEntity<AutenticacaoIoTPayloadDTO> transferir(@PathVariable String numeroDaContaOrigem,
-                                                     @Valid @RequestBody TransferenciaDTO dto) {
+                                                     @Valid @org.springframework.web.bind.annotation.RequestBody TransferenciaDTO dto) {
         AutenticacaoIoTPayloadDTO payload = service.iniciarTransferencia(numeroDaContaOrigem, dto);
         return ResponseEntity.ok(payload);
     }
@@ -362,7 +356,7 @@ public class ContaController {
     )
     @PostMapping("/{numeroDaContaOrigem}/transferir/confirmar")
     public ResponseEntity<ContaResumoDTO> confirmarTransferencia(@PathVariable String numeroDaContaOrigem,
-                                                                 @Valid @RequestBody TransferenciaDTO dto) {
+                                                                 @Valid @org.springframework.web.bind.annotation.RequestBody TransferenciaDTO dto) {
 
         ContaResumoDTO conta = service.confirmarTransferencia(numeroDaContaOrigem, dto);
         return ResponseEntity.ok(conta);

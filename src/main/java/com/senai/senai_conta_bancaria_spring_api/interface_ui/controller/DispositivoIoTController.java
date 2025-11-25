@@ -5,6 +5,8 @@ import com.senai.senai_conta_bancaria_spring_api.application.dto.DispositivoResp
 import com.senai.senai_conta_bancaria_spring_api.application.service.DispositivoIoTService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,7 +36,7 @@ public class DispositivoIoTController {
             }
     )
     @PostMapping("/vincular")
-    public ResponseEntity<DispositivoResponseDTO> vincularDispositivo(@Valid @RequestBody DispositivoRegistroDTO dto) {
+    public ResponseEntity<DispositivoResponseDTO> vincularDispositivo(@Valid @org.springframework.web.bind.annotation.RequestBody DispositivoRegistroDTO dto) {
         DispositivoResponseDTO response = service.vincularDispositivo(dto);
         return ResponseEntity.created(
                 URI.create("/api/dispositivos-iot/cliente/" + response.cpfCliente())
@@ -45,7 +47,11 @@ public class DispositivoIoTController {
             summary = "Buscar dispositivo por CPF do cliente",
             description = "Retorna os detalhes do dispositivo vinculado a um cliente. Requer permissão de ADMIN.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Dispositivo encontrado"),
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Dispositivo encontrado",
+                            content = @Content(schema = @Schema(implementation = DispositivoResponseDTO.class))
+                    ),
                     @ApiResponse(responseCode = "404", description = "Nenhum dispositivo encontrado para este cliente")
             }
     )

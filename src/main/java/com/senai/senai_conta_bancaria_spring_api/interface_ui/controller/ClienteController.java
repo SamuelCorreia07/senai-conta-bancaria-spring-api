@@ -5,6 +5,7 @@ import com.senai.senai_conta_bancaria_spring_api.application.dto.ClienteResponse
 import com.senai.senai_conta_bancaria_spring_api.application.service.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -93,7 +94,7 @@ public class ClienteController {
             }
     )
     @PostMapping
-    public ResponseEntity<ClienteResponseDTO> registrarCliente(@Valid @RequestBody ClienteRegistroDTO dto) {
+    public ResponseEntity<ClienteResponseDTO> registrarCliente(@Valid @org.springframework.web.bind.annotation.RequestBody ClienteRegistroDTO dto) {
         ClienteResponseDTO novoCliente = service.registrarClienteOuAnexarConta(dto);
         return ResponseEntity.created(
                 URI.create("/api/cliente/cpf/" + novoCliente.cpf())
@@ -104,7 +105,11 @@ public class ClienteController {
             summary = "Listar todos os clientes ativos",
             description = "Retorna uma lista de todos os clientes que estão ativos no sistema.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Lista de clientes ativos retornada com sucesso")
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Lista de clientes ativos retornada com sucesso",
+                            content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ClienteResponseDTO.class)))
+                    )
             }
     )
     @GetMapping
@@ -140,7 +145,7 @@ public class ClienteController {
     )
     @GetMapping ("/cpf/{cpf}")
     public ResponseEntity<ClienteResponseDTO> listarClienteAtivoPorCpf(@PathVariable String cpf) {
-        return ResponseEntity.ok(service.listarClienteAtivoPorCpf(cpf));
+        return ResponseEntity.ok(service.   listarClienteAtivoPorCpf(cpf));
     }
 
     @Operation(
@@ -188,7 +193,7 @@ public class ClienteController {
     )
     @PutMapping ("/cpf/{cpf}")
     public ResponseEntity<ClienteResponseDTO> atualizarCliente(@PathVariable String cpf,
-                                                                @Valid @RequestBody ClienteRegistroDTO dto) {
+                                                                @Valid @org.springframework.web.bind.annotation.RequestBody ClienteRegistroDTO dto) {
         return ResponseEntity.ok(service.atualizarCliente(cpf, dto));
     }
 

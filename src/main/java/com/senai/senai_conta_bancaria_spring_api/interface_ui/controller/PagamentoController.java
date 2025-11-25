@@ -33,8 +33,8 @@ public class PagamentoController {
     private final PagamentoAppService service;
 
     @Operation(
-            summary = "Realizar um pagamento",
-            description = "Processa um pagamento de boleto debitando o valor (principal + taxas) da conta do cliente. Requer permissão de CLIENTE.",
+            summary = "Iniciar Pagamento (Requer Autenticação IoT)",
+            description = "Valida os dados do pagamento e inicia o fluxo de autenticação IoT. Não debita a conta imediatamente.",
             requestBody = @RequestBody(
                     description = "Dados do pagamento a ser realizado",
                     required = true,
@@ -53,30 +53,18 @@ public class PagamentoController {
                     )
             ),
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Pagamento realizado com SUCESSO"),
-                    @ApiResponse(responseCode = "400", description = "Falha no pagamento (Ex: Saldo insuficiente, Boleto vencido, Dados inválidos)",
-                            content = @Content(mediaType = "application/json",
-                                    examples = @ExampleObject(name = "Saldo Insuficiente",
-                                            value = """
-                                                      {
-                                                        "type": "https://example.com/probs/saldo-insuficiente",
-                                                        "title": "Saldo insuficiente.",
-                                                        "status": 400,
-                                                        "detail": "Saldo insuficiente para realizar a operação.",
-                                                        "instance": "/api/pagamentos"
-                                                      }
-                                                    """
-                                    )
-                            )
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Autenticação IoT iniciada",
+                            content = @Content(schema = @Schema(implementation = AutenticacaoIoTPayloadDTO.class))
                     ),
-                    @ApiResponse(responseCode = "403", description = "Acesso negado (Conta não pertence ao usuário)"),
-                    @ApiResponse(responseCode = "404", description = "Conta ou Taxa não encontrada")
+                    @ApiResponse(responseCode = "403", description = "Acesso negado (Conta não pertence ao usuário)")
             }
     )
     @PostMapping
     @MqttPublisher("banco/autenticacao/iniciar")
     public ResponseEntity<AutenticacaoIoTPayloadDTO> realizarPagamento(
-            @Valid @RequestBody PagamentoRequestDTO dto,
+            @Valid @org.springframework.web.bind.annotation.RequestBody PagamentoRequestDTO dto,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         // Passamos o email (username) do usuário autenticado para o service
@@ -112,7 +100,7 @@ public class PagamentoController {
     )
     @PostMapping("/confirmar")
     public ResponseEntity<PagamentoResponseDTO> confirmarPagamento(
-            @Valid @RequestBody PagamentoRequestDTO dto,
+            @Valid @org.springframework.web.bind.annotation.RequestBody PagamentoRequestDTO dto,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         String emailAutenticado = userDetails.getUsername();

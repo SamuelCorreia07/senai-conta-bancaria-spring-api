@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,8 +42,16 @@ public class AuthController {
                     )
             ),
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Usuário autenticado com sucesso"),
-                    @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Usuário autenticado com sucesso",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthDTO.TokenResponse.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Credenciais inválidas",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))
+                    )
             }
     )
     @PostMapping("/login")
