@@ -26,8 +26,6 @@ public class AutenticacaoIoTService {
     private final DispositivoIoTRepository dispositivoIoTRepository;
     private final CodigoAutenticacaoRepository codigoAutenticacaoRepository;
 
-    private static final long EXPIRACAO_CODIGO_MINUTOS = 3;
-
     @Transactional
     public AutenticacaoIoTPayloadDTO iniciarAutenticacao(Cliente cliente) {
         log.info("Iniciando autenticação para o cliente: {}", cliente.getEmail());
@@ -39,14 +37,15 @@ public class AutenticacaoIoTService {
             throw new AutenticacaoIoTException("O dispositivo IoT deste cliente não está ativo.");
         }
 
-        String codigo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
         CodigoAutenticacao codigoAuth = CodigoAutenticacao.builder()
                 .cliente(cliente)
-                .codigo(codigo)
-                .expiraEm(LocalDateTime.now().plusMinutes(EXPIRACAO_CODIGO_MINUTOS))
+                .codigo(null)
+                .expiraEm(null)
                 .validado(false)
                 .build();
+
+        codigoAuth.setCodigo(codigoAuth.gerarCodigo());
+        codigoAuth.setExpiraEm(codigoAuth.gerarExpiracao());
 
         codigoAutenticacaoRepository.save(codigoAuth);
         log.info("Código de autenticação salvo (ID: {})", codigoAuth.getId());

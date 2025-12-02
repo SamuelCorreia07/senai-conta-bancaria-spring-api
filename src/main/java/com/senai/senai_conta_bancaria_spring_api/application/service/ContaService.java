@@ -65,6 +65,8 @@ public class ContaService {
         var conta = getContaAtivaPorNumero(numeroDaConta);
         Cliente cliente = conta.getCliente();
 
+        conta.validarSaque(dto.valor());
+
         return autenticacaoIoTService.iniciarAutenticacao(cliente);
     }
 
@@ -87,8 +89,11 @@ public class ContaService {
 
     public AutenticacaoIoTPayloadDTO iniciarTransferencia(String numeroDaContaOrigem, TransferenciaDTO dto) {
         var contaOrigem = getContaAtivaPorNumero(numeroDaContaOrigem);
-        getContaAtivaPorNumero(dto.numeroContaDestino());
+        var contaDestino = getContaAtivaPorNumero(dto.numeroContaDestino());
         Cliente cliente = contaOrigem.getCliente();
+
+        contaOrigem.validarTransferencia(contaDestino, dto.valor());
+
         return autenticacaoIoTService.iniciarAutenticacao(cliente);
     }
 

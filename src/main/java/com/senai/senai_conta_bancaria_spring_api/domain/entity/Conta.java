@@ -46,11 +46,30 @@ public abstract class Conta {
 
     public abstract String getTipo();
 
-    public void sacar(BigDecimal valor) {
+    public void validarSaque(BigDecimal valor) {
         validarValorMaiorQueZero(valor, "Saque");
         if (this.saldo.compareTo(valor) < 0) {
             throw new SaldoInsuficienteException();
         }
+    }
+
+    public void validarTransferencia(Conta contaDestino, BigDecimal valor) {
+        validarValorMaiorQueZero(valor, "Transferência");
+        if (this.id.equals(contaDestino.getId())) {
+            throw new TransferenciaParaMesmaContaException();
+        }
+        this.validarSaque(valor);
+    }
+
+    public void validarDebito(BigDecimal valor) {
+        validarValorMaiorQueZero(valor, "Débito");
+        if (this.saldo.compareTo(valor) < 0) {
+            throw new SaldoInsuficienteException();
+        }
+    }
+
+    public void sacar(BigDecimal valor) {
+        this.validarSaque(valor);
         this.saldo = this.saldo.subtract(valor);
     }
 
@@ -60,19 +79,13 @@ public abstract class Conta {
     }
 
     public void transferir(Conta contaDestino, BigDecimal valor) {
-        validarValorMaiorQueZero(valor, "Transferência");
-        if (this.id.equals(contaDestino.getId())) {
-            throw new TransferenciaParaMesmaContaException();
-        }
+        this.validarTransferencia(contaDestino, valor);
         this.sacar(valor);
         contaDestino.depositar(valor);
     }
 
     public void debitar(BigDecimal valor) {
-        validarValorMaiorQueZero(valor, "Débito");
-        if (this.saldo.compareTo(valor) < 0) {
-            throw new SaldoInsuficienteException();
-        }
+        this.validarDebito(valor);
         this.saldo = this.saldo.subtract(valor);
     }
 
