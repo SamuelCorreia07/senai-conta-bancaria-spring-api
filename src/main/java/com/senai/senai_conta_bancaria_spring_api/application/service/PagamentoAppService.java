@@ -81,12 +81,13 @@ public class PagamentoAppService {
             throw new AccessDeniedException("O usuário autenticado não tem permissão para usar esta conta.");
         }
 
-        List<Taxa> taxas = taxaRepository.findAllById(dto.taxaIds());
-        if (taxas.size() != dto.taxaIds().size()) {
-            throw new TaxaInvalidaException("Uma ou mais taxas informadas não foram encontradas.");
+        List<Taxa> taxasAplicaveis = taxaRepository.findByTipoPagamentoAndAtivoTrue(dto.tipo());
+
+        if (taxasAplicaveis.isEmpty()) {
+            throw new TaxaInvalidaException("Não existem taxas ativas para o tipo de pagamento informado.");
         }
 
-        BigDecimal valorFinal = domainService.calcularValorFinal(dto.valorPago(), taxas);
+        BigDecimal valorFinal = domainService.calcularValorFinal(dto.valorPago(), taxasAplicaveis);
         StatusPagamento status;
 
         try {
@@ -113,8 +114,9 @@ public class PagamentoAppService {
                 .valorPago(dto.valorPago())
                 .valorTotalCobrado(valorFinal)
                 .dataPagamento(LocalDateTime.now())
+                .tipo(dto.tipo())
                 .status(status)
-                .taxas(new HashSet<>(taxas))
+                .taxas(new HashSet<>(taxasAplicaveis))
                 .build();
 
         Pagamento pagamentoSalvo = pagamentoRepository.save(pagamento);

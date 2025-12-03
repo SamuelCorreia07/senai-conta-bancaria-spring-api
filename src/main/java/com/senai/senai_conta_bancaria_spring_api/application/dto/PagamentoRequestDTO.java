@@ -1,5 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
+import com.senai.senai_conta_bancaria_spring_api.domain.enums.TipoPagamento;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,9 +24,8 @@ public record PagamentoRequestDTO(
         @Positive(message = "O valor do pagamento deve ser positivo")
         BigDecimal valorPago,
 
-        // Lista de IDs das taxas que devem ser aplicadas
-        @Schema(description = "Lista de IDs das taxas a serem aplicadas", example = "[\"uuid-taxa-1\", \"uuid-taxa-2\"]")
-        @NotEmpty(message = "Pelo menos uma taxa deve ser informada (mesmo que seja uma taxa 'zero')")
-        List<String> taxaIds
+        @Schema(description = "Tipo do pagamento", example = "BOLETO")
+        @NotNull(message = "O tipo de pagamento é obrigatório")
+        TipoPagamento tipo
 ) {
 }

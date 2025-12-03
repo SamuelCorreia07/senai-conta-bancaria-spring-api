@@ -1,6 +1,7 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
 import com.senai.senai_conta_bancaria_spring_api.domain.enums.StatusPagamento;
+import com.senai.senai_conta_bancaria_spring_api.domain.enums.TipoPagamento;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,10 @@ public class Pagamento {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_id", nullable = false, foreignKey = @ForeignKey(name = "fk_pagamento_conta"))
     private Conta conta;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoPagamento tipo;
 
     @Column(nullable = false)
     private String boleto;

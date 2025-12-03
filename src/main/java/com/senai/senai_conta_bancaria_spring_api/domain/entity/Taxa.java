@@ -1,5 +1,6 @@
 package com.senai.senai_conta_bancaria_spring_api.domain.entity;
 
+import com.senai.senai_conta_bancaria_spring_api.domain.enums.TipoPagamento;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,4 +36,8 @@ public class Taxa {
 
     @ManyToMany(mappedBy = "taxas")
     private Set<Pagamento> pagamentos;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoPagamento tipoPagamento;
 }
