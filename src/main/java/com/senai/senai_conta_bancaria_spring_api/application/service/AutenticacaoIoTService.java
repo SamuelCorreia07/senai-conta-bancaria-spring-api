@@ -1,10 +1,12 @@
 package com.senai.senai_conta_bancaria_spring_api.application.service;
 
 import com.senai.senai_conta_bancaria_spring_api.application.dto.AutenticacaoIoTPayloadDTO;
+import com.senai.senai_conta_bancaria_spring_api.application.dto.StatusAutenticacaoDTO;
 import com.senai.senai_conta_bancaria_spring_api.application.dto.ValidacaoIoTRequestDTO;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Cliente;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.CodigoAutenticacao;
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.DispositivoIoT;
+import com.senai.senai_conta_bancaria_spring_api.domain.enums.StatusAutenticacao;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.AutenticacaoIoTException;
 import com.senai.senai_conta_bancaria_spring_api.domain.exceptions.EntidadeNaoEncontradaException;
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.CodigoAutenticacaoRepository;
@@ -107,5 +109,20 @@ public class AutenticacaoIoTService {
             log.warn("Tentativa de confirmação falhou. Nenhum código validado encontrado para o cliente: {}", cliente.getId());
             throw new AutenticacaoIoTException("Autenticação IoT não encontrada, inválida ou expirada.");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public StatusAutenticacaoDTO verificarStatus(String codigoId) {
+        return codigoAutenticacaoRepository.findById(codigoId)
+                .map(codigoAuth -> {
+                    if (codigoAuth.isValidado()) {
+                        return new StatusAutenticacaoDTO(StatusAutenticacao.AUTORIZADO);
+                    } else if (codigoAuth.getExpiraEm().isBefore(LocalDateTime.now())) {
+                        return new StatusAutenticacaoDTO(StatusAutenticacao.EXPIRADO);
+                    } else {
+                        return new StatusAutenticacaoDTO(StatusAutenticacao.PENDENTE);
+                    }
+                })
+                .orElse(new StatusAutenticacaoDTO(StatusAutenticacao.NAO_ENCONTRADO));
     }
 }
