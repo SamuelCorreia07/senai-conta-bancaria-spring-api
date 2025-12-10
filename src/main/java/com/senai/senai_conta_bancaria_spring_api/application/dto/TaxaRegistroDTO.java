@@ -1,6 +1,7 @@
 package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Taxa;
+import com.senai.senai_conta_bancaria_spring_api.domain.enums.TipoPagamento;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,13 +22,17 @@ public record TaxaRegistroDTO(
         @Schema(description = "Valor fixo adicional da taxa", example = "2.50")
         @NotNull(message = "O valor fixo é obrigatório")
         @PositiveOrZero(message = "O valor fixo não pode ser negativo")
-        BigDecimal valorFixo
+        BigDecimal valorFixo,
+
+        @Schema(description = "Tipo de pagamento ao qual a taxa se aplica", example = "BOLETO")
+        TipoPagamento tipoPagamento
 ) {
     public Taxa toEntity() {
         return Taxa.builder()
                 .descricao(this.descricao)
                 .percentual(this.percentual)
                 .valorFixo(this.valorFixo)
+                .tipoPagamento(this.tipoPagamento)
                 .build();
     }
 }

@@ -35,23 +35,6 @@ public class PagamentoController {
     @Operation(
             summary = "Iniciar Pagamento (Requer Autenticação IoT)",
             description = "Valida os dados do pagamento e inicia o fluxo de autenticação IoT. Não debita a conta imediatamente.",
-            requestBody = @RequestBody(
-                    description = "Dados do pagamento a ser realizado",
-                    required = true,
-                    content = @Content(
-                            schema = @Schema(implementation = PagamentoRequestDTO.class),
-                            examples = @ExampleObject(name = "Pagamento Exemplo",
-                                    value = """
-                                              {
-                                                "numeroDaContaOrigem": "1234567890",
-                                                "boleto": "34191.79001 01043.510047 91020.150008 8 76210000050000",
-                                                "valorPago": 500.00,
-                                                "taxaIds": ["taxa1", "taxa2"]
-                                              }
-                                            """
-                            )
-                    )
-            ),
             responses = {
                     @ApiResponse(
                             responseCode = "200",

@@ -13,6 +13,7 @@ import com.senai.senai_conta_bancaria_spring_api.domain.repository.CodigoAutenti
 import com.senai.senai_conta_bancaria_spring_api.domain.repository.DispositivoIoTRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class AutenticacaoIoTService {
     private final CodigoAutenticacaoRepository codigoAutenticacaoRepository;
 
     @Transactional
+    @PreAuthorize("hasRole('CLIENTE')")
     public AutenticacaoIoTPayloadDTO iniciarAutenticacao(Cliente cliente) {
         log.info("Iniciando autenticação para o cliente: {}", cliente.getEmail());
 
@@ -59,6 +61,7 @@ public class AutenticacaoIoTService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('CLIENTE')")
     public void validarCodigo(ValidacaoIoTRequestDTO dto) {
         log.info("Processando validação para Cliente ID: {}", dto.idCliente());
 

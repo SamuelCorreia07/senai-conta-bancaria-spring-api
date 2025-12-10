@@ -34,9 +34,6 @@ public class Taxa {
     @Column(nullable = false)
     private boolean ativo = true;
 
-    @ManyToMany(mappedBy = "taxas")
-    private Set<Pagamento> pagamentos;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoPagamento tipoPagamento;

@@ -2,6 +2,7 @@ package com.senai.senai_conta_bancaria_spring_api.application.dto;
 
 import com.senai.senai_conta_bancaria_spring_api.domain.entity.Pagamento;
 import com.senai.senai_conta_bancaria_spring_api.domain.enums.StatusPagamento;
+import com.senai.senai_conta_bancaria_spring_api.domain.enums.TipoPagamento;
 import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ public record PagamentoResponseDTO(
         String id,
         String numeroDaConta,
         String boleto,
+        TipoPagamento tipo,
         BigDecimal valorPago,
         BigDecimal valorTotalCobrado,
         LocalDateTime dataPagamento,
@@ -28,6 +30,7 @@ public record PagamentoResponseDTO(
                 pagamento.getId(),
                 pagamento.getConta().getNumeroDaConta(),
                 pagamento.getBoleto(),
+                pagamento.getTipo(),
                 pagamento.getValorPago(),
                 pagamento.getValorTotalCobrado(),
                 pagamento.getDataPagamento(),

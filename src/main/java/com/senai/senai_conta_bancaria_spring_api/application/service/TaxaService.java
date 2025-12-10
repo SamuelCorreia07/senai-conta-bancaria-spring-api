@@ -48,6 +48,7 @@ public class TaxaService {
         taxa.setDescricao(dto.descricao());
         taxa.setPercentual(dto.percentual());
         taxa.setValorFixo(dto.valorFixo());
+        taxa.setTipoPagamento(dto.tipoPagamento());
 
         Taxa taxaAtualizada = repository.save(taxa);
         return TaxaResponseDTO.fromEntity(taxaAtualizada);

@@ -8,7 +8,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaxaRepository extends JpaRepository<Taxa, String> {
-    List<Taxa> findAllByAtivoTrue();
-    Optional<Taxa> findByIdAndAtivoTrue(String id);
     List<Taxa> findByTipoPagamentoAndAtivoTrue(TipoPagamento tipo);
 }
